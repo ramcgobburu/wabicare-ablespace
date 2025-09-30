@@ -9,18 +9,12 @@ import {
   CardContent,
   AppBar,
   Toolbar,
-  IconButton,
   useTheme,
-  useMediaQuery,
   Chip,
   Avatar,
 } from '@mui/material';
 import {
-  Menu as MenuIcon,
-  Login as LoginIcon,
-  PersonAdd as PersonAddIcon,
   PlayArrow as PlayArrowIcon,
-  School as SchoolIcon,
   Assessment as AssessmentIcon,
   Schedule as ScheduleIcon,
   Accessibility as AccessibilityIcon,
@@ -34,8 +28,6 @@ import {
 import { useNavigate } from 'react-router-dom';
 
 const LandingPage: React.FC = () => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const navigate = useNavigate();
 
   const features = [
