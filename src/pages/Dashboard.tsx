@@ -13,18 +13,14 @@ import {
   Avatar,
   LinearProgress,
   Chip,
-  IconButton,
 } from '@mui/material';
 import {
   People as PeopleIcon,
   Flag as FlagIcon,
   Assessment as AssessmentIcon,
   Schedule as ScheduleIcon,
-  Warning as WarningIcon,
   CheckCircle as CheckCircleIcon,
   CalendarToday as CalendarIcon,
-  TrendingUp as TrendingUpIcon,
-  MoreVert as MoreVertIcon,
 } from '@mui/icons-material';
 
 const Dashboard: React.FC = () => {

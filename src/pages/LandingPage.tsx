@@ -9,7 +9,6 @@ import {
   CardContent,
   AppBar,
   Toolbar,
-  useTheme,
   Chip,
   Avatar,
 } from '@mui/material';
