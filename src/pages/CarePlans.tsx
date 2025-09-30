@@ -32,19 +32,14 @@ import {
   Edit as EditIcon,
   Delete as DeleteIcon,
   Visibility as ViewIcon,
-  Flag as FlagIcon,
   Assessment as AssessmentIcon,
   Schedule as ScheduleIcon,
   TrendingUp as TrendingUpIcon,
-  People as PeopleIcon,
   CalendarToday as CalendarIcon,
   LocalHospital as HospitalIcon,
   DataUsage as DataIcon,
   PlayArrow as PlayIcon,
   Stop as StopIcon,
-  Timer as TimerIcon,
-  CheckCircle as CheckIcon,
-  TrendingDown as TrendingDownIcon,
 } from '@mui/icons-material';
 
 interface CarePlan {

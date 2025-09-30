@@ -12,8 +12,6 @@ import {
   ListItemIcon,
   ListItemText,
   Divider,
-  useTheme,
-  useMediaQuery,
   Avatar,
   Menu,
   MenuItem,
@@ -67,8 +65,6 @@ const navigationItems = [
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
