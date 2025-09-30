@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "name": "ablespace",
+  "name": "wabi-care",
   "builds": [
     {
       "src": "package.json",
@@ -8,17 +8,9 @@
       "config": {
         "distDir": "build"
       }
-    },
-    {
-      "src": "backend/server.js",
-      "use": "@vercel/node"
     }
   ],
   "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "/backend/server.js"
-    },
     {
       "src": "/(.*)",
       "dest": "/$1"
@@ -26,11 +18,6 @@
   ],
   "env": {
     "NODE_ENV": "production"
-  },
-  "functions": {
-    "backend/server.js": {
-      "maxDuration": 30
-    }
   }
 }
 
