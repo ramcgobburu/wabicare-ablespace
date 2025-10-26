@@ -38,9 +38,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 // Wabi Care navigation data for special education platform
 const roleNavigationMap: Record<string, string[]> = {
-  RBT: ["Students", "Data Collection", "Scheduling"],
-  BCBA: ["Students", "Data Collection", "Scheduling"],
-  Administrator: ["Students", "Scheduling", "Smart Billing"],
+  RBT: ["Clients", "Data Collection", "Scheduling"],
+  BCBA: ["Clients", "Data Collection", "Scheduling"],
+  Administrator: ["Clients", "Scheduling", "Smart Billing"],
   Parent: ["Scheduling", "Data Collection"],
 }
 
@@ -52,13 +52,13 @@ const navigationData = {
       icon: Home,
     },
     {
-      title: "Students",
+      title: "Clients",
       url: "/students",
       icon: Users,
       items: [
-        { title: "Student Intake", url: "/students/new" },
-        { title: "All Students", url: "/students" },
-        { title: "Student Overview", url: "/student-overview" },
+        { title: "Client Intake", url: "/students/new" },
+        { title: "All Clients", url: "/students" },
+        { title: "Client Overview", url: "/student-overview" },
       ],
     },
     {

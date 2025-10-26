@@ -6,12 +6,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { ChevronLeft, ChevronRight, Save, CheckCircle } from "lucide-react"
+import StudentSelectionStep from "./StudentIntakeSteps/StudentSelectionStep"
 import StudentInfoStep from "./StudentIntakeSteps/StudentInfoStep"
 import SupportingDocumentsStep from "./StudentIntakeSteps/SupportingDocumentsStep"
 import AssignGoalsStep from "./StudentIntakeSteps/AssignGoalsStep"
 import RecentDrafts from "./RecentDrafts"
 
 interface IntakeData {
+  studentSelection: {
+    type: 'new' | 'registered'
+    selectedStudentId?: string
+    selectedStudentName?: string
+  }
   studentInfo: {
     firstName: string
     lastName: string
@@ -47,15 +53,19 @@ interface IntakeData {
 }
 
 const STEPS = [
-  { id: 1, title: "Student Information", description: "Basic student and parent details" },
-  { id: 2, title: "Supporting Documents", description: "Upload assessment forms and documents" },
-  { id: 3, title: "Assign Goals", description: "Set up student goals and objectives" }
+  { id: 1, title: "Student Selection", description: "Choose new or registered student" },
+  { id: 2, title: "Student Information", description: "Basic student and parent details" },
+  { id: 3, title: "Supporting Documents", description: "Upload assessment forms and documents" },
+  { id: 4, title: "Assign Goals", description: "Set up student goals and objectives" }
 ]
 
 export default function StudentIntakeFlow() {
   const router = useRouter()
   const [currentStep, setCurrentStep] = useState(1)
   const [intakeData, setIntakeData] = useState<IntakeData>({
+    studentSelection: {
+      type: 'new'
+    },
     studentInfo: {
       firstName: '',
       lastName: '',
@@ -230,19 +240,26 @@ export default function StudentIntakeFlow() {
     switch (currentStep) {
       case 1:
         return (
+          <StudentSelectionStep
+            data={intakeData.studentSelection}
+            onUpdate={(data) => updateIntakeData({ studentSelection: data })}
+          />
+        )
+      case 2:
+        return (
           <StudentInfoStep
             data={intakeData.studentInfo}
             onUpdate={(data) => updateIntakeData({ studentInfo: data })}
           />
         )
-      case 2:
+      case 3:
         return (
           <SupportingDocumentsStep
             data={intakeData.supportingDocuments}
             onUpdate={(data) => updateIntakeData({ supportingDocuments: data })}
           />
         )
-      case 3:
+      case 4:
         return (
           <AssignGoalsStep
             data={intakeData.goals}

@@ -8,7 +8,8 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Upload, FileText, CheckCircle, AlertCircle, Loader2 } from "lucide-react"
+import { Upload, FileText, CheckCircle, AlertCircle, Loader2, Send, Link, Copy } from "lucide-react"
+import { createDocumentUploadLink, sendDocumentUploadEmail } from "@/lib/documentUploadStorage"
 
 interface StudentInfoData {
   firstName: string
@@ -33,10 +34,54 @@ export default function StudentInfoStep({ data, onUpdate }: StudentInfoStepProps
   const [isProcessingIEP, setIsProcessingIEP] = useState(false)
   const [iepProcessingStatus, setIepProcessingStatus] = useState<'idle' | 'processing' | 'success' | 'error'>('idle')
   const [iepExtractedData, setIepExtractedData] = useState<any>(null)
+  const [uploadLink, setUploadLink] = useState<string | null>(null)
+  const [isGeneratingLink, setIsGeneratingLink] = useState(false)
+  const [linkGenerated, setLinkGenerated] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const updateField = (field: keyof StudentInfoData, value: string | File) => {
     onUpdate({ ...data, [field]: value })
+  }
+
+  const generateUploadLink = async () => {
+    if (!data.firstName || !data.lastName || !data.parentEmail || !data.parentName || !data.parentPhone) {
+      alert('Please fill in all required fields before generating upload link')
+      return
+    }
+
+    setIsGeneratingLink(true)
+    try {
+      const studentId = `student-${Date.now()}`
+      const studentName = `${data.firstName} ${data.lastName}`
+      
+      const link = createDocumentUploadLink(
+        studentId,
+        studentName,
+        data.parentEmail,
+        data.parentName,
+        data.parentPhone,
+        `Student intake for ${studentName}`
+      )
+
+      // Send email notification
+      await sendDocumentUploadEmail(link)
+      
+      setUploadLink(link.uploadUrl)
+      setLinkGenerated(true)
+      
+    } catch (error) {
+      console.error('Error generating upload link:', error)
+      alert('Error generating upload link. Please try again.')
+    } finally {
+      setIsGeneratingLink(false)
+    }
+  }
+
+  const copyLinkToClipboard = () => {
+    if (uploadLink) {
+      navigator.clipboard.writeText(uploadLink)
+      alert('Link copied to clipboard!')
+    }
   }
 
   const handleIEPUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -333,6 +378,78 @@ export default function StudentInfoStep({ data, onUpdate }: StudentInfoStepProps
           </CardContent>
         </Card>
       )}
+
+      {/* Document Upload Link Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Link className="h-5 w-5" />
+            Document Upload Link
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="bg-blue-50 p-4 rounded-lg">
+            <p className="text-sm text-blue-800 mb-3">
+              Generate a secure link for parents to upload required documents (medical records, insurance cards, etc.)
+            </p>
+            
+            {!linkGenerated ? (
+              <Button 
+                onClick={generateUploadLink}
+                disabled={isGeneratingLink || !data.firstName || !data.lastName || !data.parentEmail || !data.parentName || !data.parentPhone}
+                className="flex items-center gap-2"
+              >
+                {isGeneratingLink ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Generating Link...
+                  </>
+                ) : (
+                  <>
+                    <Send className="h-4 w-4" />
+                    Generate Upload Link & Send Email
+                  </>
+                )}
+              </Button>
+            ) : (
+              <div className="space-y-3">
+                <Alert className="border-green-200 bg-green-50">
+                  <CheckCircle className="h-4 w-4 text-green-600" />
+                  <AlertDescription className="text-green-800">
+                    Upload link generated and email sent to {data.parentEmail}
+                  </AlertDescription>
+                </Alert>
+                
+                <div className="space-y-2">
+                  <Label>Upload Link:</Label>
+                  <div className="flex items-center gap-2">
+                    <Input 
+                      value={uploadLink || ''} 
+                      readOnly 
+                      className="font-mono text-sm"
+                    />
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={copyLinkToClipboard}
+                      className="flex items-center gap-1"
+                    >
+                      <Copy className="h-3 w-3" />
+                      Copy
+                    </Button>
+                  </div>
+                </div>
+                
+                <div className="text-xs text-muted-foreground">
+                  <p>• Link expires in 7 days</p>
+                  <p>• Parents can upload multiple documents</p>
+                  <p>• Documents are securely stored and linked to this student</p>
+                </div>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }

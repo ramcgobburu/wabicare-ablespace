@@ -43,7 +43,7 @@ export function SchedulingDashboardHeader({ viewMode, onViewModeChange }: Schedu
       <CardHeader className="pb-5">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="space-y-1">
-            <CardTitle className="text-3xl font-bold text-foreground">Scheduling Assistant</CardTitle>
+            <CardTitle className="text-3xl font-bold text-foreground">Scheduling Dashboard</CardTitle>
             <CardDescription className="text-base text-muted-foreground">
               {headlineCopy}
             </CardDescription>

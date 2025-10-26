@@ -18,7 +18,7 @@ export function SchedulingSummaryCard({ onOpenWorkspace }: SchedulingSummaryCard
     <Card className="shadow-none border-muted">
       <CardHeader className="pb-2">
         <CardTitle className="text-sm font-semibold flex items-center justify-between">
-          <span>Scheduling Assistant</span>
+          <span>Scheduling Dashboard</span>
           <Badge variant="secondary" className="text-xs">Preview</Badge>
         </CardTitle>
       </CardHeader>

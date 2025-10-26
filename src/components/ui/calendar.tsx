@@ -1,6 +1,6 @@
 "use client"
 
-import React from "react"
+import React, { useState } from "react"
 import { addMonths, eachWeekOfInterval, format, startOfDay, startOfMonth } from "date-fns"
 
 import { cn } from "@/lib/utils"
@@ -12,6 +12,9 @@ export interface CalendarProps<T = unknown> {
   getEventKey?: (event: T, index: number) => string
   renderEvent?: (event: T) => React.ReactNode
   className?: string
+  onEventMove?: (event: T, newDate: Date) => void
+  onEventDragStart?: (event: T) => void
+  onEventDragEnd?: (event: T) => void
 }
 
 export function Calendar<T>({
@@ -21,7 +24,13 @@ export function Calendar<T>({
   getEventKey,
   renderEvent,
   className,
+  onEventMove,
+  onEventDragStart,
+  onEventDragEnd,
 }: CalendarProps<T>) {
+  const [draggedEvent, setDraggedEvent] = useState<T | null>(null)
+  const [dragOverDate, setDragOverDate] = useState<string | null>(null)
+  
   const monthStart = startOfMonth(currentDate)
   const weeks = eachWeekOfInterval({ start: monthStart, end: addMonths(monthStart, 1) }, { weekStartsOn: 0 })
 
@@ -60,11 +69,33 @@ export function Calendar<T>({
               <div
                 key={`${key}-${dayIndex}`}
                 className={cn(
-                  "min-h-[110px] border p-3 text-sm transition-colors",
+                  "min-h-[140px] border p-3 text-sm transition-colors",
                   !isCurrentMonth && "bg-muted/40 text-muted-foreground",
                   isCurrentMonth && "bg-background",
-                  "hover:bg-muted/60"
+                  "hover:bg-muted/60",
+                  dragOverDate === key && "bg-blue-100 border-blue-300 border-2"
                 )}
+                onDragOver={(e) => {
+                  e.preventDefault()
+                  e.dataTransfer.dropEffect = 'move'
+                  setDragOverDate(key)
+                }}
+                onDragLeave={() => {
+                  setDragOverDate(null)
+                }}
+                onDrop={(e) => {
+                  e.preventDefault()
+                  setDragOverDate(null)
+                  const eventData = e.dataTransfer.getData('application/json')
+                  if (eventData && onEventMove) {
+                    try {
+                      const event = JSON.parse(eventData)
+                      onEventMove(event, date)
+                    } catch (error) {
+                      console.error('Error parsing dropped event:', error)
+                    }
+                  }
+                }}
               >
                 <div className="flex items-center justify-between">
                   <span className="font-semibold text-foreground">{date.getDate()}</span>
@@ -75,16 +106,32 @@ export function Calendar<T>({
                   )}
                 </div>
                 <div className="mt-2 space-y-2">
-                  {items.slice(0, 3).map((item, index) => (
+                  {items
+                    .sort((a, b) => getEventDate(a).getTime() - getEventDate(b).getTime())
+                    .slice(0, 4)
+                    .map((item, index) => (
                     <div
                       key={getEventKey ? getEventKey(item, index) : `${key}-${index}`}
-                      className="truncate rounded-md bg-primary/10 px-2 py-1 text-xs text-primary"
+                      className="cursor-move transition-all duration-200 hover:scale-105"
+                      draggable
+                      onDragStart={(e) => {
+                        e.dataTransfer.setData('application/json', JSON.stringify(item))
+                        e.dataTransfer.effectAllowed = 'move'
+                        setDraggedEvent(item)
+                        onEventDragStart?.(item)
+                      }}
+                      onDragEnd={() => {
+                        setDraggedEvent(null)
+                        onEventDragEnd?.(item)
+                      }}
                     >
                       {renderEvent ? renderEvent(item) : format(getEventDate(item), "hh:mm a")}
                     </div>
                   ))}
-                  {items.length > 3 && (
-                    <div className="text-xs text-muted-foreground">+{items.length - 3} more</div>
+                  {items.length > 4 && (
+                    <div className="text-xs text-muted-foreground bg-gray-100 rounded px-2 py-1 text-center">
+                      +{items.length - 4} more appointments
+                    </div>
                   )}
                 </div>
               </div>

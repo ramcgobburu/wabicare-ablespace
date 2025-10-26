@@ -41,7 +41,7 @@ export function DashboardSidebar({ className }: DashboardSidebarProps) {
     },
     {
       id: "students",
-      label: "Students",
+      label: "Clients",
       icon: Users,
       href: "/students",
       badge: "24"

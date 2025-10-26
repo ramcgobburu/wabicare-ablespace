@@ -194,6 +194,14 @@ function StudentOverviewContentInner() {
                   <div className="flex space-x-2">
                     <Button variant="outline" onClick={handleTakeData}>Take Data</Button>
                     <Button className="bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow hover:shadow-lg hover:scale-105 transform">View Data</Button>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => router.push(`/scheduling?student=${selectedStudentId}`)}
+                      className="flex items-center gap-2"
+                    >
+                      <Calendar className="h-4 w-4" />
+                      Schedule Appointments
+                    </Button>
                     <Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button>
                   </div>
             </Card>

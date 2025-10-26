@@ -1,7 +1,7 @@
 import SchedulingPageClient from "@/components/scheduling/SchedulingPageClient"
 
 export const metadata = {
-  title: "Scheduling Assistant | Wabi Care",
+  title: "Scheduling Dashboard | Wabi Care",
   description: "Review AI scheduling suggestions and requests."
 }
 

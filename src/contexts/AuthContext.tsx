@@ -34,6 +34,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setLoading(false)
       } catch (error) {
         console.error('Error getting initial session:', error)
+        
+        // If it's a refresh token error, clear the session and sign out
+        if (error instanceof Error && error.message.includes('Invalid Refresh Token')) {
+          console.log('Clearing invalid refresh token...')
+          await supabase.auth.signOut()
+        }
+        
         setLoading(false)
       }
     }
@@ -50,6 +57,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log('Auth state changed:', event, session?.user?.id)
+        
+        // Handle token refresh errors
+        if (event === 'TOKEN_REFRESHED' && !session) {
+          console.log('Token refresh failed, clearing session...')
+          await supabase.auth.signOut()
+        }
+        
         setUser(session?.user ?? null)
         setLoading(false)
         if (timeout) clearTimeout(timeout)
