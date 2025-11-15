@@ -6,17 +6,21 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { 
   Calendar, 
   Clock, 
   User, 
   CheckCircle,
   Sparkles,
-  AlertCircle
+  AlertCircle,
+  XCircle,
+  Shield
 } from "lucide-react"
 import { format, addDays, addWeeks } from "date-fns"
 import { saveAppointment } from "@/lib/appointmentStorage"
 import { BCPAAppointment } from "@/types/bcpa-appointments"
+import { useAuthorization } from "@/hooks/useAuthorization"
 
 interface BCPAAppointmentSchedulerProps {
   studentId: string
@@ -33,6 +37,9 @@ function BCPAAppointmentScheduler({
   const [suggestions, setSuggestions] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
   const [notes, setNotes] = useState("")
+  const [authError, setAuthError] = useState<string | null>(null)
+  const [showOverrideDialog, setShowOverrideDialog] = useState(false)
+  const { validateAppointment, validating } = useAuthorization()
 
   const appointmentTypes = [
     { code: "151", name: "Initial Assessment", description: "First BCPA evaluation and assessment" },
@@ -75,7 +82,7 @@ function BCPAAppointmentScheduler({
     }
   }
 
-  const scheduleAppointment = (suggestion: any) => {
+  const scheduleAppointment = async (suggestion: any, overrideAuth: boolean = false) => {
     // Business hours validation (8 AM to 8 PM)
     const startTime = new Date(suggestion.startTime)
     const startHour = startTime.getHours()
@@ -85,6 +92,30 @@ function BCPAAppointmentScheduler({
       return
     }
 
+    // Authorization validation (unless override is approved)
+    if (!overrideAuth) {
+      setAuthError(null)
+      const duration = Math.round((suggestion.endTime.getTime() - suggestion.startTime.getTime()) / (1000 * 60))
+      const selectedType = appointmentTypes.find(apt => apt.code === appointmentType)
+      
+      const validation = await validateAppointment({
+        patientId: studentId,
+        duration,
+        billingCode: selectedType?.code,
+        startTime: suggestion.startTime,
+        endTime: suggestion.endTime
+      })
+
+      if (!validation.canSchedule) {
+        setAuthError(validation.message)
+        if (validation.requiresOverride) {
+          setShowOverrideDialog(true)
+        }
+        return
+      }
+    }
+
+    const selectedType = appointmentTypes.find(apt => apt.code === appointmentType)
     const appointment: BCPAAppointment = {
       id: `apt-${Date.now()}`,
       patientId: studentId,
@@ -95,7 +126,7 @@ function BCPAAppointmentScheduler({
         name: ""
       },
       appointmentType: appointmentType as 'initial-assessment' | 'follow-up' | 'technician-session',
-      code: appointmentTypes.find(apt => apt.code === appointmentType)?.code as '151' | '155' | 'technician',
+      code: selectedType?.code as '151' | '155' | 'technician',
       status: 'scheduled',
       scheduledBy: 'bcpa',
       startTime: suggestion.startTime,
@@ -121,6 +152,8 @@ function BCPAAppointmentScheduler({
     setSuggestions([])
     setAppointmentType("")
     setNotes("")
+    setAuthError(null)
+    setShowOverrideDialog(false)
   }
 
   const getAppointmentTypeInfo = (code: string) => {
@@ -290,14 +323,64 @@ function BCPAAppointmentScheduler({
                       </p>
                     </div>
 
+                    {/* Authorization Error Alert */}
+                    {authError && (
+                      <Alert variant="destructive" className="mb-4">
+                        <XCircle className="h-4 w-4" />
+                        <AlertTitle>Authorization Check Failed</AlertTitle>
+                        <AlertDescription>{authError}</AlertDescription>
+                      </Alert>
+                    )}
+
+                    {/* Override Dialog */}
+                    {showOverrideDialog && (
+                      <Alert className="mb-4 border-yellow-500 bg-yellow-50">
+                        <Shield className="h-4 w-4 text-yellow-600" />
+                        <AlertTitle className="text-yellow-800">Supervisor Override Required</AlertTitle>
+                        <AlertDescription className="text-yellow-700">
+                          This appointment requires supervisor approval due to authorization limits. 
+                          Please contact your supervisor to proceed.
+                        </AlertDescription>
+                        <div className="mt-3 flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setShowOverrideDialog(false)
+                              setAuthError(null)
+                            }}
+                          >
+                            Cancel
+                          </Button>
+                          <Button
+                            size="sm"
+                            className="bg-yellow-600 hover:bg-yellow-700"
+                            onClick={() => scheduleAppointment(suggestion, true)}
+                          >
+                            Request Override
+                          </Button>
+                        </div>
+                      </Alert>
+                    )}
+
                     <div className="flex items-center gap-3 pt-2">
                       <Button
                         onClick={() => scheduleAppointment(suggestion)}
+                        disabled={validating}
                         className="flex-1 bg-green-600 hover:bg-green-700"
                         size="lg"
                       >
-                        <Calendar className="h-4 w-4 mr-2" />
-                        Schedule Appointment
+                        {validating ? (
+                          <>
+                            <Clock className="h-4 w-4 mr-2 animate-spin" />
+                            Validating...
+                          </>
+                        ) : (
+                          <>
+                            <Calendar className="h-4 w-4 mr-2" />
+                            Schedule Appointment
+                          </>
+                        )}
                       </Button>
                       <Button variant="outline" size="lg">
                         View Details
